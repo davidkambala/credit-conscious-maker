@@ -137,7 +137,7 @@ const Home = () => {
             Rejoignez des centaines de Congolais qui utilisent Job Finder RDC pour trouver leur emploi idéal.
           </p>
           <Link to="/chat">
-            <Button size="lg" className="text-base group my-0">
+            <Button size="lg" className="text-base group my-[50px]">
               Commencer maintenant
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
