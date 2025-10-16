@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { JobCard } from "@/components/JobCard";
 import { ChatMessage } from "@/components/ChatMessage";
 import { SuggestedActions } from "@/components/SuggestedActions";
+import { Navigation } from "@/components/Navigation";
 import { mockJobs, searchJobs, Job } from "@/data/mockJobs";
-import { Send, Briefcase } from "lucide-react";
+import { Send } from "lucide-react";
 import { toast } from "sonner";
 
 interface Message {
@@ -14,7 +15,7 @@ interface Message {
   jobs?: Job[];
 }
 
-const Index = () => {
+const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       text: "Bonjour! Je suis votre assistant de recherche d'emploi. Comment puis-je vous aider aujourd'hui?",
@@ -98,20 +99,7 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Job Finder RDC</h1>
-              <p className="text-xs text-muted-foreground">Votre assistant emploi intelligent</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto">
@@ -161,4 +149,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Chat;
