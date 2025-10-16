@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { MessageSquare, FileText, Briefcase, MapPin, Sparkles, Users, ArrowRight } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
 const Home = () => {
@@ -145,12 +146,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 py-12 bg-card/50">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">© 2024 Job Finder RDC. Tous droits réservés.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>;
 };
 export default Home;

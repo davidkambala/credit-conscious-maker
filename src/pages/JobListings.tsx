@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { JobCard } from "@/components/JobCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -124,6 +125,8 @@ const JobListings = () => {
           )}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
