@@ -59,10 +59,10 @@ const Contact = () => {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Mail className="w-6 h-6 text-primary" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                    <p className="text-sm text-muted-foreground">contact@jobfinderrdc.com</p>
-                    <p className="text-sm text-muted-foreground">support@jobfinderrdc.com</p>
+                    <p className="text-sm text-muted-foreground break-words">contact@jobfinderrdc.com</p>
+                    <p className="text-sm text-muted-foreground break-words">support@jobfinderrdc.com</p>
                   </div>
                 </div>
               </Card>
