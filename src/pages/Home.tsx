@@ -4,19 +4,16 @@ import { Card } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { MessageSquare, FileText, Briefcase, MapPin, Sparkles, Users, ArrowRight } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
-
 const Home = () => {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Navigation />
       
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroBackground})` }}
-        />
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+        backgroundImage: `url(${heroBackground})`
+      }} />
         
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
@@ -136,11 +133,11 @@ const Home = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-foreground">
             Prêt à commencer votre recherche d'emploi?
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto my-[20px]">
             Rejoignez des centaines de Congolais qui utilisent Job Finder RDC pour trouver leur emploi idéal.
           </p>
           <Link to="/chat">
-            <Button size="lg" className="text-base group">
+            <Button size="lg" className="text-base group my-0">
               Commencer maintenant
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -154,8 +151,6 @@ const Home = () => {
           <p className="text-muted-foreground">© 2024 Job Finder RDC. Tous droits réservés.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
