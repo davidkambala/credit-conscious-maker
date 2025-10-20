@@ -12,3 +12,5 @@ export const fetchJobs = async (): Promise<Job[]> => {
   const data = await response.json();
   return data;
 };
+
+export type { Job };

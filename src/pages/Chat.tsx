@@ -1,18 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { JobCard } from "@/components/JobCard";
+import { Navigation } from "@/components/Navigation";
 import { ChatMessage } from "@/components/ChatMessage";
 import { SuggestedActions } from "@/components/SuggestedActions";
-import { Navigation } from "@/components/Navigation";
-import { mockJobs, searchJobs, Job } from "@/data/mockJobs";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { fetchJobs } from "@/api/jobs";
 
 interface Message {
   text: string;
   isUser: boolean;
-  jobs?: Job[];
 }
 
 const Chat = () => {
@@ -23,8 +22,13 @@ const Chat = () => {
     },
   ]);
   const [input, setInput] = useState("");
-  const [displayedJobs, setDisplayedJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
+    queryKey: ['jobs'],
+    queryFn: fetchJobs,
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,51 +38,87 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (messageText?: string) => {
+  const handleSendMessage = async (messageText?: string) => {
     const text = messageText || input.trim();
-    if (!text) return;
+    if (!text || isLoading) return;
 
-    // Add user message
     const userMessage: Message = { text, isUser: true };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      let botResponse = "";
-      let jobs: Job[] = [];
-
-      const lowerText = text.toLowerCase();
-
-      if (lowerText.includes("kinshasa") || lowerText.includes("lubumbashi") || lowerText.includes("goma")) {
-        const city = lowerText.includes("kinshasa") ? "Kinshasa" 
-                   : lowerText.includes("lubumbashi") ? "Lubumbashi" 
-                   : "Goma";
-        jobs = mockJobs.filter(job => job.location_city === city);
-        botResponse = `Voici les emplois disponibles à ${city}:`;
-      } else if (lowerText.includes("emploi") || lowerText.includes("travail") || lowerText.includes("job")) {
-        jobs = mockJobs.slice(0, 4);
-        botResponse = "Voici quelques opportunités d'emploi qui pourraient vous intéresser:";
-      } else if (lowerText.includes("cv") || lowerText.includes("curriculum")) {
-        botResponse = "Pour générer votre CV, veuillez sélectionner un emploi auquel postuler. Je créerai un CV adapté à cette offre. (Fonctionnalité à venir avec le backend)";
-      } else if (lowerText.includes("développeur") || lowerText.includes("developer")) {
-        jobs = searchJobs("développeur");
-        botResponse = "Voici les postes de développeur disponibles:";
-      } else {
-        botResponse = "Je peux vous aider à trouver des emplois à Kinshasa, Lubumbashi ou Goma. Que recherchez-vous?";
-      }
-
-      const botMessage: Message = { 
-        text: botResponse, 
-        isUser: false,
-        jobs: jobs.length > 0 ? jobs : undefined
-      };
+    try {
+      const chatUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
       
-      setMessages((prev) => [...prev, botMessage]);
-      if (jobs.length > 0) {
-        setDisplayedJobs(jobs);
+      const response = await fetch(chatUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(m => ({
+            role: m.isUser ? "user" : "assistant",
+            content: m.text
+          })),
+          jobs: jobs,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response from AI");
       }
-    }, 500);
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantText = "";
+      
+      if (reader) {
+        let buffer = "";
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") continue;
+              
+              try {
+                const parsed = JSON.parse(data);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) {
+                  assistantText += content;
+                  setMessages((prev) => {
+                    const newMessages = [...prev];
+                    const lastMessage = newMessages[newMessages.length - 1];
+                    
+                    if (lastMessage && !lastMessage.isUser) {
+                      lastMessage.text = assistantText;
+                    } else {
+                      newMessages.push({ text: assistantText, isUser: false });
+                    }
+                    return newMessages;
+                  });
+                }
+              } catch (e) {
+                console.error("Error parsing SSE data:", e);
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Erreur lors de l'envoi du message");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAction = (action: string) => {
@@ -90,11 +130,8 @@ const Chat = () => {
   };
 
   const handleApply = (jobId: string) => {
-    const job = mockJobs.find(j => j.id === jobId);
-    if (job) {
-      toast.success(`Candidature enregistrée pour ${job.title}`);
-      handleSendMessage(`Je souhaite postuler pour le poste de ${job.title}`);
-    }
+    toast.success(`Candidature enregistrée`);
+    handleSendMessage(`Je souhaite postuler pour un emploi, pouvez-vous m'aider avec le processus de candidature?`);
   };
 
   return (
@@ -104,22 +141,27 @@ const Chat = () => {
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
-          {messages.map((message, index) => (
-            <div key={index}>
-              <ChatMessage message={message.text} isUser={message.isUser} />
-              {message.jobs && message.jobs.length > 0 && (
-                <div className="grid gap-3 mb-4 sm:grid-cols-2">
-                  {message.jobs.map((job) => (
-                    <JobCard key={job.id} job={job} onApply={handleApply} />
-                  ))}
+          {jobsLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          ) : (
+            <>
+              {messages.map((message, index) => (
+                <ChatMessage key={index} message={message.text} isUser={message.isUser} />
+              ))}
+              {!messages[messages.length - 1]?.isUser && !isLoading && (
+                <SuggestedActions onAction={handleAction} />
+              )}
+              {isLoading && (
+                <div className="flex items-center gap-2 text-muted-foreground mb-4">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">L'assistant réfléchit...</span>
                 </div>
               )}
-            </div>
-          ))}
-          {!messages[messages.length - 1]?.isUser && (
-            <SuggestedActions onAction={handleAction} />
+              <div ref={messagesEndRef} />
+            </>
           )}
-          <div ref={messagesEndRef} />
         </div>
       </div>
 
@@ -139,8 +181,8 @@ const Chat = () => {
               placeholder="Tapez votre message..."
               className="flex-1"
             />
-            <Button type="submit" size="icon">
-              <Send className="w-4 h-4" />
+            <Button type="submit" size="icon" disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </form>
         </div>
