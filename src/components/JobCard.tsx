@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, ExternalLink } from "lucide-react";
 import { Job } from "@/data/mockJobs";
 
@@ -30,14 +29,10 @@ export const JobCard = ({ job, onApply }: JobCardProps) => {
           <p className="text-muted-foreground font-medium">{job.company}</p>
         </div>
         
-        {job.skills && job.skills.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {job.skills.map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {skill}
-              </Badge>
-            ))}
-          </div>
+        {job.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {job.description}
+          </p>
         )}
         
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
