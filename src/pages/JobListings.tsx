@@ -1,22 +1,41 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { JobCard } from "@/components/JobCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockJobs, searchJobs } from "@/data/mockJobs";
-import { Search, MapPin } from "lucide-react";
+import { fetchJobs } from "@/api/jobs";
+import { Job } from "@/data/mockJobs";
+import { Search, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const JobListings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState<string>("all");
-  const [displayedJobs, setDisplayedJobs] = useState(mockJobs);
+  const [displayedJobs, setDisplayedJobs] = useState<Job[]>([]);
+
+  const { data: jobs, isLoading, error } = useQuery({
+    queryKey: ["jobs"],
+    queryFn: fetchJobs,
+  });
 
   const cities = ["all", "Kinshasa", "Lubumbashi", "Goma"];
 
+  const searchInJobs = (query: string, jobsList: Job[]): Job[] => {
+    const lowerQuery = query.toLowerCase();
+    return jobsList.filter(job =>
+      job.title.toLowerCase().includes(lowerQuery) ||
+      job.company.toLowerCase().includes(lowerQuery) ||
+      job.location_city.toLowerCase().includes(lowerQuery) ||
+      job.skills?.some(skill => skill.toLowerCase().includes(lowerQuery))
+    );
+  };
+
   const handleSearch = () => {
-    let filtered = searchQuery ? searchJobs(searchQuery) : mockJobs;
+    if (!jobs) return;
+    
+    let filtered = searchQuery ? searchInJobs(searchQuery, jobs) : jobs;
     
     if (selectedCity !== "all") {
       filtered = filtered.filter(job => job.location_city === selectedCity);
@@ -27,11 +46,13 @@ const JobListings = () => {
   };
 
   const handleApply = (jobId: string) => {
-    const job = mockJobs.find(j => j.id === jobId);
+    const job = jobs?.find(j => j.id === jobId);
     if (job) {
       toast.success(`Candidature enregistrée pour ${job.title}`);
     }
   };
+
+  const jobsToDisplay = displayedJobs.length > 0 ? displayedJobs : (jobs || []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,8 +108,9 @@ const JobListings = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      if (!jobs) return;
                       setSearchQuery(filter);
-                      setDisplayedJobs(searchJobs(filter));
+                      setDisplayedJobs(searchInJobs(filter, jobs));
                     }}
                   >
                     {filter}
@@ -98,21 +120,40 @@ const JobListings = () => {
             </div>
           </div>
 
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex justify-center items-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-16">
+              <p className="text-destructive mb-2">Erreur lors du chargement des offres</p>
+              <p className="text-sm text-muted-foreground">{error.message}</p>
+            </div>
+          )}
+
           {/* Results count */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {displayedJobs.length} offre(s) d'emploi disponible(s)
-            </p>
-          </div>
+          {!isLoading && !error && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {jobsToDisplay.length} offre(s) d'emploi disponible(s)
+              </p>
+            </div>
+          )}
 
           {/* Job Cards Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayedJobs.map((job) => (
-              <JobCard key={job.id} job={job} onApply={handleApply} />
-            ))}
-          </div>
+          {!isLoading && !error && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {jobsToDisplay.map((job) => (
+                <JobCard key={job.id} job={job} onApply={handleApply} />
+              ))}
+            </div>
+          )}
 
-          {displayedJobs.length === 0 && (
+          {!isLoading && !error && jobsToDisplay.length === 0 && (
             <div className="text-center py-16">
               <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">
