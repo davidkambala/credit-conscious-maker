@@ -2,10 +2,10 @@ export interface Job {
   id: string;
   title: string;
   company: string;
-  location_city: string;
+  location_city: string | null;
   url: string;
-  date_posted: string;
-  description?: string;
+  date_posted: string; // ISO string
+  skills: string[];
 }
 
 export const mockJobs: Job[] = [
@@ -16,7 +16,7 @@ export const mockJobs: Job[] = [
     location_city: "Kinshasa",
     url: "https://example.com/job/1",
     date_posted: "2025-10-14",
-    description: "Nous recherchons un développeur full stack expérimenté avec React et Node.js"
+    skills: ["React", "Node.js", "TypeScript", "MongoDB"]
   },
   {
     id: "2",
@@ -25,7 +25,7 @@ export const mockJobs: Job[] = [
     location_city: "Kinshasa",
     url: "https://example.com/job/2",
     date_posted: "2025-10-13",
-    description: "Gestion de projets informatiques pour clients internationaux"
+    skills: ["Gestion de projet", "Agile", "SCRUM", "Communication"]
   },
   {
     id: "3",
@@ -34,7 +34,7 @@ export const mockJobs: Job[] = [
     location_city: "Lubumbashi",
     url: "https://example.com/job/3",
     date_posted: "2025-10-12",
-    description: "Installation et maintenance des infrastructures réseau"
+    skills: ["Cisco", "TCP/IP", "Routage", "Firewall"]
   },
   {
     id: "4",
@@ -43,7 +43,7 @@ export const mockJobs: Job[] = [
     location_city: "Lubumbashi",
     url: "https://example.com/job/4",
     date_posted: "2025-10-11",
-    description: "Analyse de données pour le secteur minier"
+    skills: ["Python", "SQL", "Power BI", "Excel"]
   },
   {
     id: "5",
@@ -52,7 +52,7 @@ export const mockJobs: Job[] = [
     location_city: "Goma",
     url: "https://example.com/job/5",
     date_posted: "2025-10-10",
-    description: "Développement d'applications mobiles iOS et Android"
+    skills: ["React Native", "iOS", "Android", "Firebase"]
   },
   {
     id: "6",
@@ -61,7 +61,7 @@ export const mockJobs: Job[] = [
     location_city: "Kinshasa",
     url: "https://example.com/job/6",
     date_posted: "2025-10-09",
-    description: "Gestion de la sécurité informatique et cybersécurité"
+    skills: ["Cybersécurité", "Pen Testing", "ISO 27001", "SIEM"]
   },
   {
     id: "7",
@@ -70,7 +70,7 @@ export const mockJobs: Job[] = [
     location_city: "Goma",
     url: "https://example.com/job/7",
     date_posted: "2025-10-08",
-    description: "Conception d'interfaces utilisateur modernes et intuitives"
+    skills: ["Figma", "Adobe XD", "Prototypage", "Design Thinking"]
   },
   {
     id: "8",
@@ -79,13 +79,13 @@ export const mockJobs: Job[] = [
     location_city: "Lubumbashi",
     url: "https://example.com/job/8",
     date_posted: "2025-10-07",
-    description: "Administration de serveurs Linux et Windows"
+    skills: ["Linux", "Windows Server", "VMware", "Docker"]
   }
 ];
 
 export const getJobsByCity = (city: string): Job[] => {
   return mockJobs.filter(job => 
-    job.location_city.toLowerCase() === city.toLowerCase()
+    job.location_city?.toLowerCase() === city.toLowerCase()
   );
 };
 
@@ -94,6 +94,6 @@ export const searchJobs = (query: string): Job[] => {
   return mockJobs.filter(job =>
     job.title.toLowerCase().includes(lowerQuery) ||
     job.company.toLowerCase().includes(lowerQuery) ||
-    job.location_city.toLowerCase().includes(lowerQuery)
+    job.location_city?.toLowerCase().includes(lowerQuery)
   );
 };
