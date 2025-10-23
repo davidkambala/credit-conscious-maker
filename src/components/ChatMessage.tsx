@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface ChatMessageProps {
   message: string;
@@ -17,7 +18,9 @@ export const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
           ? "bg-primary text-primary-foreground rounded-br-sm" 
           : "bg-muted text-foreground rounded-bl-sm"
       )}>
-        <p className="text-sm whitespace-pre-wrap break-words">{message}</p>
+        <div className="text-sm prose prose-sm max-w-none dark:prose-invert prose-headings:mt-3 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-li:my-1">
+          <ReactMarkdown>{message}</ReactMarkdown>
+        </div>
       </div>
     </div>
   );
