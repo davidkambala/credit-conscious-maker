@@ -1,16 +1,17 @@
+import { supabase } from "@/integrations/supabase/client";
 import { Job } from "@/data/mockJobs";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api.example.com";
-
 export const fetchJobs = async (): Promise<Job[]> => {
-  const response = await fetch(`${API_BASE_URL}/jobs`);
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .order('date_posted', { ascending: false });
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch jobs: ${response.statusText}`);
+  if (error) {
+    throw new Error(`Failed to fetch jobs: ${error.message}`);
   }
   
-  const data = await response.json();
-  return data;
+  return data || [];
 };
 
 export type { Job };
